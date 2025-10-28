@@ -760,22 +760,34 @@ const Index = () => {
                                 </div>
                               </div>
 
-                              <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
-                                <div>
-                                  <p className="text-muted-foreground">Пользователь</p>
-                                  <p className="font-medium">{withdrawal.userName}</p>
+                              <div className="grid grid-cols-1 gap-3 mb-4">
+                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                  <div>
+                                    <p className="text-muted-foreground">Пользователь</p>
+                                    <p className="font-medium">{withdrawal.userName}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-muted-foreground">Email</p>
+                                    <p className="font-medium">{withdrawal.userEmail}</p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <p className="text-muted-foreground">Email</p>
-                                  <p className="font-medium">{withdrawal.userEmail}</p>
-                                </div>
-                                <div>
-                                  <p className="text-muted-foreground">Карта</p>
-                                  <p className="font-medium">**** {withdrawal.cardNumber.slice(-4)}</p>
-                                </div>
-                                <div>
-                                  <p className="text-muted-foreground">Банк</p>
-                                  <p className="font-medium">{withdrawal.bankName}</p>
+                                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Icon name="CreditCard" className="text-amber-700" size={18} />
+                                    <p className="text-sm font-semibold text-amber-900">Реквизиты для перевода</p>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                      <p className="text-xs text-amber-700">Номер карты</p>
+                                      <p className="font-mono font-bold text-amber-900 text-lg">
+                                        {withdrawal.cardNumber.match(/.{1,4}/g)?.join(' ')}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs text-amber-700">Банк</p>
+                                      <p className="font-semibold text-amber-900">{withdrawal.bankName}</p>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
 
