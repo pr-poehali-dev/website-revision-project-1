@@ -644,13 +644,67 @@ const Index = () => {
 
             {currentSection === 'admin' && isAdmin && (
               <div className="space-y-6 animate-in fade-in duration-500">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <Icon name="Clock" className="text-blue-600" size={24} />
+                        <Badge variant="secondary">{withdrawals.filter(w => w.status === 'pending').length}</Badge>
+                      </div>
+                      <p className="text-sm text-blue-700 mb-1">В ожидании</p>
+                      <p className="text-2xl font-bold text-blue-900">
+                        {withdrawals.filter(w => w.status === 'pending').reduce((sum, w) => sum + w.amount, 0).toLocaleString()}₽
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <Icon name="CheckCircle" className="text-green-600" size={24} />
+                        <Badge variant="secondary">{withdrawals.filter(w => w.status === 'approved').length}</Badge>
+                      </div>
+                      <p className="text-sm text-green-700 mb-1">Одобрено</p>
+                      <p className="text-2xl font-bold text-green-900">
+                        {withdrawals.filter(w => w.status === 'approved').reduce((sum, w) => sum + w.amount, 0).toLocaleString()}₽
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <Icon name="XCircle" className="text-red-600" size={24} />
+                        <Badge variant="secondary">{withdrawals.filter(w => w.status === 'rejected').length}</Badge>
+                      </div>
+                      <p className="text-sm text-red-700 mb-1">Отклонено</p>
+                      <p className="text-2xl font-bold text-red-900">
+                        {withdrawals.filter(w => w.status === 'rejected').reduce((sum, w) => sum + w.amount, 0).toLocaleString()}₽
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <Icon name="Wallet" className="text-purple-600" size={24} />
+                        <Badge variant="secondary">{withdrawals.length}</Badge>
+                      </div>
+                      <p className="text-sm text-purple-700 mb-1">Всего заявок</p>
+                      <p className="text-2xl font-bold text-purple-900">
+                        {withdrawals.reduce((sum, w) => sum + w.amount, 0).toLocaleString()}₽
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-3xl flex items-center gap-2">
                       <Icon name="Shield" size={32} className="text-primary" />
-                      Админ-панель: Заявки на вывод
+                      Управление заявками
                     </CardTitle>
-                    <CardDescription>Управление заявками пользователей</CardDescription>
+                    <CardDescription>Список всех заявок на вывод средств</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center gap-4">
