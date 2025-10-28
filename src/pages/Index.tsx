@@ -39,10 +39,40 @@ const Index = () => {
       });
       return;
     }
+
     toast({
-      title: "Заявка принята",
-      description: `Вывод ${withdrawAmount}₽ на карту ${cardNumber.slice(-4)} обрабатывается`,
+      title: "✅ Заявка принята",
+      description: `Вывод ${withdrawAmount}₽ на карту *${cardNumber.slice(-4)} обрабатывается`,
     });
+
+    setTimeout(() => {
+      toast({
+        title: "🔄 Заявка в обработке",
+        description: `Банк ${getBankName(selectedBank)} получил вашу заявку`,
+      });
+    }, 3000);
+
+    setTimeout(() => {
+      toast({
+        title: "✨ Вывод выполнен успешно",
+        description: `${withdrawAmount}₽ успешно переведено на вашу карту`,
+      });
+    }, 8000);
+
+    setWithdrawAmount('');
+    setCardNumber('');
+    setSelectedBank('');
+  };
+
+  const getBankName = (bankCode: string) => {
+    const banks: Record<string, string> = {
+      sber: 'Сбербанк',
+      tinkoff: 'Тинькофф',
+      alpha: 'Альфа-Банк',
+      vtb: 'ВТБ',
+      raiff: 'Райффайзен',
+    };
+    return banks[bankCode] || bankCode;
   };
 
   const NavButton = ({ section, icon, label }: { section: string; icon: string; label: string }) => (
