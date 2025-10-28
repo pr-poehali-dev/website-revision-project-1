@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Create withdrawal request",
+      "method": "POST",
+      "body": {
+        "userName": "Test User",
+        "userEmail": "test@example.com",
+        "amount": "1000",
+        "cardNumber": "1234567812345678",
+        "bankName": "Сбербанк"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
