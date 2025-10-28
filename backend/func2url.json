@@ -1,4 +1,6 @@
 {
+  "update-withdrawal": "https://functions.poehali.dev/9cd8b1b8-b6c0-4f80-8b67-01b8d8ead733",
+  "get-withdrawals": "https://functions.poehali.dev/6bc27e0f-ee67-4836-a793-216834c60469",
   "withdraw-request": "https://functions.poehali.dev/93e6ec4d-e680-4c35-9bd9-9ffdb0c3c1b6",
   "withdraw-action": "https://functions.poehali.dev/2be7bf95-287d-4e02-a310-6f53f982c1ce"
 }

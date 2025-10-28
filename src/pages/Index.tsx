@@ -1,15 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
+interface Withdrawal {
+  id: number;
+  userName: string;
+  userEmail: string;
+  amount: number;
+  cardNumber: string;
+  bankName: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminKey, setAdminKey] = useState('');
   const [currentSection, setCurrentSection] = useState('home');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -17,6 +32,8 @@ const Index = () => {
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [selectedBank, setSelectedBank] = useState('');
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
+  const [statusFilter, setStatusFilter] = useState('all');
   const { toast } = useToast();
 
   const handleRegister = () => {
@@ -100,6 +117,80 @@ const Index = () => {
     return banks[bankCode] || bankCode;
   };
 
+  const fetchWithdrawals = async () => {
+    if (!isAdmin || !adminKey) return;
+
+    try {
+      const url = statusFilter === 'all' 
+        ? 'https://functions.poehali.dev/6bc27e0f-ee67-4836-a793-216834c60469'
+        : `https://functions.poehali.dev/6bc27e0f-ee67-4836-a793-216834c60469?status=${statusFilter}`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'X-Admin-Key': adminKey,
+        },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setWithdrawals(data.withdrawals);
+      }
+    } catch (error) {
+      console.error('Failed to fetch withdrawals:', error);
+    }
+  };
+
+  const handleAdminLogin = () => {
+    if (adminKey === 'admin123') {
+      setIsAdmin(true);
+      setCurrentSection('admin');
+      toast({
+        title: "Вход выполнен",
+        description: "Добро пожаловать в админ-панель",
+      });
+    } else {
+      toast({
+        title: "Ошибка",
+        description: "Неверный ключ администратора",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateStatus = async (id: number, status: string) => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/9cd8b1b8-b6c0-4f80-8b67-01b8d8ead733', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Key': adminKey,
+        },
+        body: JSON.stringify({ id, status }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast({
+          title: "Статус обновлён",
+          description: `Заявка #${id} ${status === 'approved' ? 'одобрена' : 'отклонена'}`,
+        });
+        fetchWithdrawals();
+      }
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить статус",
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isAdmin && currentSection === 'admin') {
+      fetchWithdrawals();
+    }
+  }, [isAdmin, currentSection, statusFilter]);
+
   const NavButton = ({ section, icon, label }: { section: string; icon: string; label: string }) => (
     <Button
       variant={currentSection === section ? 'default' : 'ghost'}
@@ -123,16 +214,24 @@ const Index = () => {
               MoneyPlatform
             </h1>
           </div>
-          {isAuthenticated && (
-            <div className="flex items-center gap-3">
-              <div className="px-4 py-2 bg-primary/10 rounded-lg">
-                <span className="text-sm font-semibold text-primary">Баланс: 5,240₽</span>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => setIsAuthenticated(false)}>
-                Выход
+          <div className="flex items-center gap-3">
+            {isAuthenticated && (
+              <>
+                <div className="px-4 py-2 bg-primary/10 rounded-lg">
+                  <span className="text-sm font-semibold text-primary">Баланс: 5,240₽</span>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setIsAuthenticated(false)}>
+                  Выход
+                </Button>
+              </>
+            )}
+            {isAdmin && (
+              <Button variant="outline" size="sm" onClick={() => setCurrentSection('admin')}>
+                <Icon name="Shield" size={16} className="mr-1" />
+                Админ
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </nav>
 
@@ -154,6 +253,11 @@ const Index = () => {
                 )}
                 <NavButton section="faq" icon="HelpCircle" label="Вопросы и ответы" />
                 <NavButton section="contacts" icon="Mail" label="Контакты" />
+                {!isAdmin && (
+                  <div className="pt-4 border-t">
+                    <NavButton section="admin-login" icon="Shield" label="Админ-вход" />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </aside>
@@ -513,6 +617,143 @@ const Index = () => {
                   </Button>
                 </CardContent>
               </Card>
+            )}
+
+            {currentSection === 'admin-login' && !isAdmin && (
+              <Card className="animate-in fade-in duration-500">
+                <CardHeader>
+                  <CardTitle className="text-3xl">Вход для администратора</CardTitle>
+                  <CardDescription>Введите ключ доступа</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Ключ администратора</label>
+                    <Input
+                      type="password"
+                      placeholder="Введите ключ"
+                      value={adminKey}
+                      onChange={(e) => setAdminKey(e.target.value)}
+                    />
+                  </div>
+                  <Button onClick={handleAdminLogin} className="w-full" size="lg">
+                    Войти
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {currentSection === 'admin' && isAdmin && (
+              <div className="space-y-6 animate-in fade-in duration-500">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-3xl flex items-center gap-2">
+                      <Icon name="Shield" size={32} className="text-primary" />
+                      Админ-панель: Заявки на вывод
+                    </CardTitle>
+                    <CardDescription>Управление заявками пользователей</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-48">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Все заявки</SelectItem>
+                          <SelectItem value="pending">В ожидании</SelectItem>
+                          <SelectItem value="approved">Одобрено</SelectItem>
+                          <SelectItem value="rejected">Отклонено</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button onClick={fetchWithdrawals} variant="outline">
+                        <Icon name="RefreshCw" size={18} className="mr-2" />
+                        Обновить
+                      </Button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {withdrawals.length === 0 ? (
+                        <div className="text-center py-12 text-muted-foreground">
+                          <Icon name="Inbox" size={48} className="mx-auto mb-3 opacity-50" />
+                          <p>Заявок пока нет</p>
+                        </div>
+                      ) : (
+                        withdrawals.map((withdrawal) => (
+                          <Card key={withdrawal.id} className="border-2">
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between mb-3">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-bold text-lg">Заявка #{withdrawal.id}</span>
+                                    <Badge 
+                                      variant={
+                                        withdrawal.status === 'approved' ? 'default' : 
+                                        withdrawal.status === 'rejected' ? 'destructive' : 
+                                        'secondary'
+                                      }
+                                    >
+                                      {withdrawal.status === 'pending' && '⏳ В ожидании'}
+                                      {withdrawal.status === 'approved' && '✅ Одобрено'}
+                                      {withdrawal.status === 'rejected' && '❌ Отклонено'}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">
+                                    {new Date(withdrawal.createdAt).toLocaleString('ru-RU')}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-2xl font-bold text-primary">{withdrawal.amount}₽</p>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+                                <div>
+                                  <p className="text-muted-foreground">Пользователь</p>
+                                  <p className="font-medium">{withdrawal.userName}</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">Email</p>
+                                  <p className="font-medium">{withdrawal.userEmail}</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">Карта</p>
+                                  <p className="font-medium">**** {withdrawal.cardNumber.slice(-4)}</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">Банк</p>
+                                  <p className="font-medium">{withdrawal.bankName}</p>
+                                </div>
+                              </div>
+
+                              {withdrawal.status === 'pending' && (
+                                <div className="flex gap-2">
+                                  <Button 
+                                    onClick={() => handleUpdateStatus(withdrawal.id, 'approved')}
+                                    className="flex-1"
+                                    size="sm"
+                                  >
+                                    <Icon name="Check" size={16} className="mr-1" />
+                                    Одобрить
+                                  </Button>
+                                  <Button 
+                                    onClick={() => handleUpdateStatus(withdrawal.id, 'rejected')}
+                                    variant="destructive"
+                                    className="flex-1"
+                                    size="sm"
+                                  >
+                                    <Icon name="X" size={16} className="mr-1" />
+                                    Отклонить
+                                  </Button>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             )}
           </main>
         </div>

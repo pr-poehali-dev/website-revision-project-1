@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Update withdrawal status",
+      "method": "POST",
+      "headers": {
+        "X-Admin-Key": "admin123"
+      },
+      "body": {
+        "id": 1,
+        "status": "approved"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
