@@ -14,7 +14,7 @@ interface Withdrawal {
   userName: string;
   userEmail: string;
   amount: number;
-  cardNumber: string;
+  phoneNumber: string;
   bankName: string;
   status: string;
   createdAt: string;
@@ -30,7 +30,7 @@ const Index = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [selectedBank, setSelectedBank] = useState('');
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -48,7 +48,7 @@ const Index = () => {
   };
 
   const handleWithdraw = async () => {
-    if (!withdrawAmount || !cardNumber || !selectedBank) {
+    if (!withdrawAmount || !phoneNumber || !selectedBank) {
       toast({
         title: "Ошибка",
         description: "Заполните все поля для вывода",
@@ -67,7 +67,7 @@ const Index = () => {
           userName: username,
           userEmail: email,
           amount: withdrawAmount,
-          cardNumber: cardNumber,
+          phoneNumber: phoneNumber,
           bankName: getBankName(selectedBank),
         }),
       });
@@ -77,7 +77,7 @@ const Index = () => {
       if (data.success) {
         toast({
           title: "✅ Заявка принята",
-          description: `Вывод ${withdrawAmount}₽ на карту *${cardNumber.slice(-4)} обрабатывается`,
+          description: `Вывод ${withdrawAmount}₽ через СБП на номер ${phoneNumber} обрабатывается`,
         });
 
         setTimeout(() => {
@@ -88,7 +88,7 @@ const Index = () => {
         }, 3000);
 
         setWithdrawAmount('');
-        setCardNumber('');
+        setPhoneNumber('');
         setSelectedBank('');
       } else {
         toast({
@@ -468,8 +468,11 @@ const Index = () => {
             {currentSection === 'withdraw' && isAuthenticated && (
               <Card className="animate-in fade-in duration-500">
                 <CardHeader>
-                  <CardTitle className="text-3xl">Вывод средств</CardTitle>
-                  <CardDescription>Выведите заработанные деньги на свою карту</CardDescription>
+                  <CardTitle className="text-3xl flex items-center gap-2">
+                    <Icon name="Banknote" size={32} />
+                    Вывод через СБП
+                  </CardTitle>
+                  <CardDescription>Моментальный перевод на любой банк по номеру телефона</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="p-4 bg-muted/50 rounded-lg">
@@ -489,20 +492,27 @@ const Index = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Номер карты</label>
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <Icon name="Smartphone" size={16} />
+                        Номер телефона для СБП
+                      </label>
                       <Input
-                        placeholder="0000 0000 0000 0000"
-                        value={cardNumber}
-                        onChange={(e) => setCardNumber(e.target.value)}
-                        maxLength={19}
+                        placeholder="+7 (___) ___-__-__"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        maxLength={18}
                       />
+                      <p className="text-xs text-muted-foreground">Введите номер в формате +7 (999) 123-45-67</p>
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Выберите банк</label>
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <Icon name="Building2" size={16} />
+                        Банк для СБП
+                      </label>
                       <Select value={selectedBank} onValueChange={setSelectedBank}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Выберите банк" />
+                          <SelectValue placeholder="Выберите ваш банк" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="sber">Сбербанк</SelectItem>
@@ -510,16 +520,19 @@ const Index = () => {
                           <SelectItem value="alpha">Альфа-Банк</SelectItem>
                           <SelectItem value="vtb">ВТБ</SelectItem>
                           <SelectItem value="raiff">Райффайзен</SelectItem>
+                          <SelectItem value="psb">ПСБ</SelectItem>
+                          <SelectItem value="gazprom">Газпромбанк</SelectItem>
+                          <SelectItem value="open">Открытие</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
-                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg">
                       <div className="flex gap-2">
-                        <Icon name="Info" className="text-blue-600 mt-0.5" size={18} />
+                        <Icon name="Zap" className="text-blue-600 mt-0.5" size={20} />
                         <div>
-                          <p className="text-sm font-medium text-blue-900">Комиссия 0%</p>
-                          <p className="text-xs text-blue-700">Вывод обрабатывается в течение 24 часов</p>
+                          <p className="text-sm font-bold text-blue-900">Вывод через СБП — мгновенно!</p>
+                          <p className="text-xs text-blue-700 mt-1">Комиссия 0% • Перевод за 1-3 минуты • Доступно 24/7</p>
                         </div>
                       </div>
                     </div>
@@ -771,22 +784,27 @@ const Index = () => {
                                     <p className="font-medium">{withdrawal.userEmail}</p>
                                   </div>
                                 </div>
-                                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <Icon name="CreditCard" className="text-amber-700" size={18} />
-                                    <p className="text-sm font-semibold text-amber-900">Реквизиты для перевода</p>
+                                <div className="p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-lg">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <Icon name="Smartphone" className="text-amber-700" size={20} />
+                                    <p className="text-sm font-bold text-amber-900">Реквизиты СБП для перевода</p>
                                   </div>
-                                  <div className="grid grid-cols-2 gap-3">
+                                  <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                      <p className="text-xs text-amber-700">Номер карты</p>
-                                      <p className="font-mono font-bold text-amber-900 text-lg">
-                                        {withdrawal.cardNumber.match(/.{1,4}/g)?.join(' ')}
+                                      <p className="text-xs text-amber-700 mb-1">Номер телефона</p>
+                                      <p className="font-mono font-bold text-amber-900 text-xl">
+                                        {withdrawal.phoneNumber}
                                       </p>
                                     </div>
                                     <div>
-                                      <p className="text-xs text-amber-700">Банк</p>
-                                      <p className="font-semibold text-amber-900">{withdrawal.bankName}</p>
+                                      <p className="text-xs text-amber-700 mb-1">Банк получателя</p>
+                                      <p className="font-bold text-amber-900 text-lg">{withdrawal.bankName}</p>
                                     </div>
+                                  </div>
+                                  <div className="mt-3 pt-3 border-t border-amber-300">
+                                    <p className="text-xs text-amber-800">
+                                      ⚡ Используйте СБП в вашем банковском приложении для перевода
+                                    </p>
                                   </div>
                                 </div>
                               </div>

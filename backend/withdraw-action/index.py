@@ -68,13 +68,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         cur = conn.cursor()
         
         cur.execute(
-            "SELECT user_name, user_email, amount, card_number, bank_name FROM withdrawals WHERE id = %s",
+            "SELECT user_name, user_email, amount, phone_number, bank_name FROM withdrawals WHERE id = %s",
             (withdrawal_id,)
         )
         result = cur.fetchone()
         
         if result:
-            user_name, user_email, amount, card_number, bank_name = result
+            user_name, user_email, amount, phone_number, bank_name = result
             
             cur.execute(
                 "UPDATE withdrawals SET status = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
@@ -88,7 +88,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             response_message = (
                 f"{status_emoji} <b>Заявка #{withdrawal_id} {status_text}</b>\n\n"
                 f"👤 {user_name}\n"
-                f"💰 {amount}₽ → *{card_number[-4:]} ({bank_name})"
+                f"💰 {amount}₽ → {phone_number} ({bank_name})"
             )
             
             url = f'https://api.telegram.org/bot{bot_token}/sendMessage'

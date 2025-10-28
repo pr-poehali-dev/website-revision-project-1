@@ -39,10 +39,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     user_name = body_data.get('userName')
     user_email = body_data.get('userEmail')
     amount = body_data.get('amount')
-    card_number = body_data.get('cardNumber')
+    phone_number = body_data.get('phoneNumber')
     bank_name = body_data.get('bankName')
     
-    if not all([user_name, user_email, amount, card_number, bank_name]):
+    if not all([user_name, user_email, amount, phone_number, bank_name]):
         return {
             'statusCode': 400,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
@@ -55,9 +55,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     cur = conn.cursor()
     
     cur.execute(
-        "INSERT INTO withdrawals (user_name, user_email, amount, card_number, bank_name, status) "
+        "INSERT INTO withdrawals (user_name, user_email, amount, phone_number, bank_name, status) "
         "VALUES (%s, %s, %s, %s, %s, 'pending') RETURNING id",
-        (user_name, user_email, amount, card_number, bank_name)
+        (user_name, user_email, amount, phone_number, bank_name)
     )
     withdrawal_id = cur.fetchone()[0]
     conn.commit()
@@ -71,7 +71,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             f"👤 Пользователь: {user_name}\n"
             f"📧 Email: {user_email}\n"
             f"💰 Сумма: {amount}₽\n"
-            f"💳 Карта: *{card_number[-4:]}\n"
+            f"📱 Телефон СБП: {phone_number}\n"
             f"🏦 Банк: {bank_name}\n\n"
             f"Для управления используйте команды:\n"
             f"/approve_{withdrawal_id} - Одобрить\n"

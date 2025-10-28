@@ -7,7 +7,7 @@
         "userName": "Test User",
         "userEmail": "test@example.com",
         "amount": "1000",
-        "cardNumber": "1234567812345678",
+        "phoneNumber": "+79991234567",
         "bankName": "Сбербанк"
       },
       "expectedStatus": 200,

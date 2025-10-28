@@ -52,12 +52,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     if status_filter == 'all':
         cur.execute(
-            "SELECT id, user_name, user_email, amount, card_number, bank_name, status, "
+            "SELECT id, user_name, user_email, amount, phone_number, bank_name, status, "
             "created_at, updated_at FROM withdrawals ORDER BY created_at DESC"
         )
     else:
         cur.execute(
-            "SELECT id, user_name, user_email, amount, card_number, bank_name, status, "
+            "SELECT id, user_name, user_email, amount, phone_number, bank_name, status, "
             "created_at, updated_at FROM withdrawals WHERE status = %s ORDER BY created_at DESC",
             (status_filter,)
         )
@@ -71,7 +71,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'userName': row[1],
             'userEmail': row[2],
             'amount': float(row[3]),
-            'cardNumber': row[4],
+            'phoneNumber': row[4],
             'bankName': row[5],
             'status': row[6],
             'createdAt': row[7].isoformat() if row[7] else None,
