@@ -30,7 +30,7 @@ const Index = () => {
     }
   };
 
-  const handleWithdraw = () => {
+  const handleWithdraw = async () => {
     if (!withdrawAmount || !cardNumber || !selectedBank) {
       toast({
         title: "Ошибка",
@@ -40,28 +40,53 @@ const Index = () => {
       return;
     }
 
-    toast({
-      title: "✅ Заявка принята",
-      description: `Вывод ${withdrawAmount}₽ на карту *${cardNumber.slice(-4)} обрабатывается`,
-    });
-
-    setTimeout(() => {
-      toast({
-        title: "🔄 Заявка в обработке",
-        description: `Банк ${getBankName(selectedBank)} получил вашу заявку`,
+    try {
+      const response = await fetch('https://functions.poehali.dev/93e6ec4d-e680-4c35-9bd9-9ffdb0c3c1b6', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userName: username,
+          userEmail: email,
+          amount: withdrawAmount,
+          cardNumber: cardNumber,
+          bankName: getBankName(selectedBank),
+        }),
       });
-    }, 3000);
 
-    setTimeout(() => {
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: "✅ Заявка принята",
+          description: `Вывод ${withdrawAmount}₽ на карту *${cardNumber.slice(-4)} обрабатывается`,
+        });
+
+        setTimeout(() => {
+          toast({
+            title: "🔄 Заявка в обработке",
+            description: `Администратор получил вашу заявку`,
+          });
+        }, 3000);
+
+        setWithdrawAmount('');
+        setCardNumber('');
+        setSelectedBank('');
+      } else {
+        toast({
+          title: "Ошибка",
+          description: "Не удалось создать заявку. Попробуйте позже",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "✨ Вывод выполнен успешно",
-        description: `${withdrawAmount}₽ успешно переведено на вашу карту`,
+        title: "Ошибка",
+        description: "Проблема с подключением. Попробуйте позже",
+        variant: "destructive",
       });
-    }, 8000);
-
-    setWithdrawAmount('');
-    setCardNumber('');
-    setSelectedBank('');
+    }
   };
 
   const getBankName = (bankCode: string) => {
